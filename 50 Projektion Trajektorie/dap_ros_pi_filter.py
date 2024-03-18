@@ -16,7 +16,6 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 #global variables
 switch = True #is switch in correct position (in the middle)
-stop_flag = False #is command sent to shut down projection
 linear = 0 #current linear velocity
 rotation = 0 #current rotational velocity
 
@@ -249,7 +248,6 @@ class SignalThread(threading.Thread):
         self.cmd_vel_rotation_subscriber = rospy.Subscriber('/imu', Imu, self.cmd_vel_rotation_callback) # to get current rotational velocity
         self.rc_command_subscriber = rospy.Subscriber('/remote_joy', Joy, self.rc_command_callback) # to get current switch position
         self.cmd_vel_linear_subscriber = rospy.Subscriber('/odom', Odometry, self.cmd_vel_linear_callback) # to get current linear velocity
-        self.cmd_laser_subscriber = rospy.Subscriber('/cmd_laser', String, self.cmd_laser_callback) # to get command to stop this rosnode/file
 
         # Publisher
         self.debug_publisher = rospy.Publisher('/debug', String, queue_size=1)
@@ -257,15 +255,7 @@ class SignalThread(threading.Thread):
         print("init successful")
 
     def run(self):
-        global stop_flag  # wait, time
-        while True:
-            # print(zone)
-            if stop_flag:
-                time.sleep(2)
-                self.stop_subscribers()
-                pygame.quit()
-                sys.exit()
-                break
+        rospy.spin()
 
     def cmd_vel_linear_callback(self, msg):
         global linear
@@ -279,32 +269,9 @@ class SignalThread(threading.Thread):
         rotation = rotation * 100
         rotation = int(rotation)
 
-    def cmd_laser_callback(self,msg):
-        global zone, stop_flag
-        if(msg.data == "stop"):
-            stop_flag = True
-
     def rc_command_callback(self, data):
         global switch
         
-        # if data.buttons[6] == 1:
-        # 	if not switch:
-        # 		self.debug_publisher.publish("RaspBi | Projection activated due to B")
-        # 		print("Projektion an wegen B")
-        # 	switch = True
-        
-        # else:
-        # 	if data.buttons[29] == 1:
-        # 		if not switch:
-        # 			self.debug_publisher.publish("RaspBi | Projection activated")
-        # 			switch = True
-        # 			print("Projektion an")
-        # 	elif data.buttons[28] == 1:
-        # 		if switch:
-        # 			self.debug_publisher.publish("RaspBi | Projection deactivated")
-        # 			switch = False
-        # 			print("Projektion aus")
-
         # if button C is down or D is up
         if data.buttons[29] == 1 or data.buttons[30] == 1:
             # print only when a state change occurs
@@ -317,13 +284,6 @@ class SignalThread(threading.Thread):
                 self.debug_publisher.publish("Projection | Projection deactivated")
             # reset flag
             switch = False
-
-    def stop_subscribers(self):
-        self.cmd_vel_rotation_subscriber.unregister()
-        self.rc_command_subscriber.unregister()
-        self.cmd_vel_linear_subscriber.unregister()
-        self.cmd_laser_subscriber.unregister()
-
 
 tProjector = DisplayThread(1, "ProjectorTask")
 tSignal = SignalThread(2, "SignalTask")
