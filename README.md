@@ -6,7 +6,7 @@ A project utilizing RaspberryPi4 that controls lasers to show safety zone and a 
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Hardware_Data](#hardwareData) 
+- [Hardware_Data](#hardware_data) 
 
 ## Installation
 
