@@ -9,19 +9,9 @@ Pinouts:
 ---------------------------------------------------------
 
 ----------------- FILE EXPLANATION ----------------------
-1st configuration (obsolete):
-
-projection_management.py: File on remote PC that calls avcommunication_ros.py via ssh
-avcommunication_ros.py: File on the Innok Robot, which calls av_new_ros.py via ssh, and publishes scan and odometry data
-av_new_ros.py: File on the RaspPi, which controls the laser, audio, and graphical output
-minisend.py: Multi-purpose file to write to and read from Innok or RPi using ssh
-
-
-
-2nd configuration:
-
 projection_management.py: File on remote PC that calls av_combined.py on RPi via ssh
 av_combined.py = File on RPi that controls laser, audio, grpahical output as well as subscribing LIDAR data and calculating safe zones
+minisend.py: Multi-purpose file to write to and read from Innok or RPi using ssh
 ----------------------------------------------------------
 
 ------------------ Raspberry Pi --------------------------
