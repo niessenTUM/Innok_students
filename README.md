@@ -22,6 +22,13 @@ A project utilizing RaspberryPi4 that controls lasers to show safety zone and a 
 
 ## Usage
 
+### Switch button configuration
+
+- To activate only the safety zone projection, toggle the C switch on the Innok Robot RC upwards
+- To activate only the trajectory projection, toggle the C switch on the Innok Robot RC downwards
+- To activate both projections, toggle the D switch on the Innok Robot RC upwards
+- To deactivate both projections, toggle the D switch on the Innok Robot RC downwards
+
 ### Running the code
 
 1. Run projection_management.py on the Luigi PC
