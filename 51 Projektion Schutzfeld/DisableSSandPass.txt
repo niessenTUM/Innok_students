@@ -1,0 +1,19 @@
+To disable the screen saver and password login on Ubuntu, you can follow these steps:
+
+Disable Screen Saver:
+
+Open the "Settings" application.
+
+Click on "Power".
+
+Set "Blank screen" to "Never".
+
+Disable Password Login:
+
+Open the "Settings" application.
+
+Click on "Users".
+
+Click on "Unlock" in the top right corner and enter your password.
+
+Click on the "Automatic Login" switch to enable it.
