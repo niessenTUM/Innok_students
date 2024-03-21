@@ -30,7 +30,11 @@ A project utilizing RaspberryPi4 that controls lasers to show safety zone and a 
 
 ### Running the code
 
-1. Run projection_management.py on the Luigi PC
+1. Turn the robot on and connect the Luigi PC to the robot's WLAn (tumheros)
+2. Check connection to the RPi by opening the terminal on the PC and running "ping ubuntu@10.21.20.15". Wait until you get a respond from the RPi
+3. Read the README on the folders "50 Projektion Trajektorie" and "51 Projektion Schutzfeld", make sure the files exist on
+the raspberry Pi
+4. Run projection_management.py on the Luigi PC
 
 ### Debugging
 
