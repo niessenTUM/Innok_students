@@ -1,9 +1,6 @@
 
 import paramiko
 import threading
-import rospy
-from sensor_msgs.msg import Joy
-import paramiko
 
 class StartSchutzlaserThreadPi(threading.Thread):
     def __init__(self, iD, name):           # Initialize the first thread

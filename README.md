@@ -19,7 +19,6 @@ A project utilizing RaspberryPi4 that controls lasers to show safety zone and a 
 
 1. Connect the beamer to the HDMI port (@Nicolas bitte befuellen welche Port) on the RPi
 
-
 ## Usage
 
 ### Switch button configuration
@@ -43,5 +42,8 @@ To read debug messages from the code running in the raspberry pi, follow the fol
 
 ### Raspberry Pi 4 Model B
 1. Operating system: Ubuntu server 20.04.5 LTS (64-bit) from rpi-imager
-2. ROS distro: ROS noetic
-3. GUI: lubuntu 
+2. ROS distro: ROS noetic (TBD version number?)
+3. GUI: lubuntu (No Screensaver and disable password login)
+4. Python version: TBD
+5. pip version: TBD
+6. The Raspberry Pi has to be connected to Innok's WLAN (tumheros) 
