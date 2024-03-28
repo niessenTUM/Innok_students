@@ -25,6 +25,9 @@ pygame.init()
 #title of window
 pygame.display.set_caption("Visualisierung Drehwinkel")
 
+# Kill node if existing
+os.system("rosnode kill /RaspCi")
+
 # Initalize ROS-Node
 rospy.init_node('RaspCi', anonymous=False, log_level=rospy.DEBUG)
 

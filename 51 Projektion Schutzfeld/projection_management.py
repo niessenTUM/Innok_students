@@ -15,6 +15,8 @@ class StartSchutzlaserThreadPi(threading.Thread):
         self.sshSchutzlaser.connect('10.21.20.15', port=22, username='ubuntu', password='heros_ubuntu')    # Start first SSH connection to innok and enter username and password automatically
         # allow ssh to use display by running an X Server, access directory, and run file
         stdin, stdout, stderr = self.sshSchutzlaser.exec_command(
+            # # Kill all python processes
+            # 'pkill -f python3 -9\n sleep 0.1\n'
             # Setup X Server to show pygame's output
             'export XAUTHORITY=~/.Xauthority\n sleep 0.1\n export DISPLAY=:0.0\n sleep 0.1\n sudo xhost +\n sleep 0.1\n'
             # Setup ROS environment
