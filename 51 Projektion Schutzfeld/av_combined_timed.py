@@ -47,7 +47,19 @@ GPIO.setup(Laser_pin_3, GPIO.OUT)
 
 # global vars for determining zone
 minimal_distance = None
+linear_speed = None
 zone = None
+
+stop_flag = False
+start_publishing = False
+
+input_linear = [0.0, 0.0, 0.0]
+timer_move = [5.0, 60.0, 5.0]
+
+length = len(input_linear)  # Determine number of moves
+output = [0] *length        # Prepare vector for output to terminal
+for x in range(length):     # Fill vector with commands from above in format LIN{number}, e.g. LIN1.0
+    output[x] = f"LIN{input_linear[x]}\n"
 
 # Start node
 rospy.init_node('RaspPi', anonymous=False, log_level=rospy.DEBUG) # Initalize ROS-Node
@@ -79,10 +91,10 @@ class LaserThread(threading.Thread):
             time.sleep(interval)
 
     def run(self):
-        global zone, rc_activated
+        global zone, stop_flag, rc_activated
         last_played = None
 
-        while True:
+        while not stop_flag:
             # if innok rc allows laser to turn on
             if rc_activated:
                 # check zones
@@ -139,6 +151,11 @@ class LaserThread(threading.Thread):
                 GPIO.output(Laser_pin_2, GPIO.LOW)
                 GPIO.output(Laser_pin_3, GPIO.LOW)
 
+        if stop_flag:
+            GPIO.output(Laser_pin_1, GPIO.LOW)
+            GPIO.output(Laser_pin_2, GPIO.LOW)
+            GPIO.output(Laser_pin_3, GPIO.LOW)
+
 class ProjectorThread(threading.Thread):
     def __init__(self, iD, name):
         threading.Thread.__init__(self)
@@ -149,7 +166,7 @@ class ProjectorThread(threading.Thread):
         
         
     def run(self):
-        global zone
+        global zone, stop_flag
         # lokale Variabeln
         # Hintergrundfarbe transparent
         bg_color = (0, 0, 0, 0)
@@ -175,8 +192,9 @@ class ProjectorThread(threading.Thread):
         safety_zone = 1.0
         warning_zone1 = 1.6
         warning_zone2 = 2.0
+
  
-        while True:
+        while not stop_flag:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -233,9 +251,9 @@ class AcousticThread(threading.Thread):
         self.name = name
     
     def run(self):
-        global zone
+        global zone, stop_flag
         last_played = None
-        while True:
+        while not stop_flag:
             # if innok rc allows laser to turn on
             if rc_activated:
                 # check zones
@@ -285,8 +303,16 @@ class PubSubThread(threading.Thread):
         self.pub_debug = rospy.Publisher('/debug', String, queue_size=1)
 
     def run(self):
-        rospy.spin()
+        global stop_flag
 
+        while True:
+                        
+            if stop_flag:
+                self.stop_subscribers()  # Stop the subscribers 
+                time.sleep(2)
+                pygame.quit()
+                # sys.exit()
+            
     def scan_callback(self, msg):
         # Extract the ranges and determine the minimum distance
         global minimal_distance
@@ -313,43 +339,108 @@ class PubSubThread(threading.Thread):
                 self.pub_debug.publish("Laser | Laser deactivated")
             # reset flag
             rc_activated = False
+
+
+    def stop_subscribers(self):
+        self.scan_subscriber.unregister()
+        self.speed_subscriber.unregister()
+        self.rc_command_subscriber.unregister()
         
 class DriverThread(threading.Thread):
      def __init__(self, iD, name):
          threading.Thread.__init__(self)
          self.iD = iD
          self.name = name
-         self.safety_zone = 1
-         self.warning_zone_1 = 1.6
-         self.warning_zone_2 = 2.2   
+         self.safety_zone = 0.0
+         self.warning_zone_1 = 0.0
+         self.warning_zone_2 = 0.0   
+         self.move_counter = 0  
          self.previous_zone = None      
          
          # Create publisher
-         self.pub_debug = rospy.Publisher('/debug', String, queue_size=1)         
+         self.pub_debug = rospy.Publisher('/debug', String, queue_size=1)
+     
+     def calculate_safety_zone(self, linear_speed):
+         # Berechnung der Größe des Schutzfeldes
+         if 0.8 < linear_speed <= 1.2:
+             stop_distance = 1.1
+             safety_margin = 0.2  # 10 cm Sicherheitszuschlag
+             safety_zone = stop_distance + safety_margin
+             warning_zone_1 = safety_zone + 0.8
+             warning_zone_2 = safety_zone + 1.6
+         elif linear_speed <= 0.8:
+             stop_distance = 0.8
+             safety_margin = 0.2  # 10 cm Sicherheitszuschlag
+             safety_zone = stop_distance + safety_margin
+             warning_zone_1 = safety_zone + 0.6
+             warning_zone_2 = safety_zone + 1.2
+         elif linear_speed >1.2:    # Code is only meant to work until 1.2 m/s
+             stop_distance = 3.0
+             safety_margin = 0.2
+             safety_zone = stop_distance + safety_margin
+             warning_zone_1 = safety_zone + 1.0
+             warning_zone_2 = safety_zone + 2.0
+         return (safety_zone, warning_zone_1, warning_zone_2)            
      
      def run(self):
-        global minimal_distance, zone
+        global input_linear, timer_move, length, minimal_distance, linear_speed, zone, stop_flag
+        while self.move_counter < length:
+            time.sleep(0.1)
+            if minimal_distance is not None and linear_speed is not None:
+                # Calculate safety zones
+                self.safety_zone, self.warning_zone_1, self.warning_zone_2 = self.calculate_safety_zone(linear_speed)
+                # print(self.safety_zone)
+                
+                pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+                time.sleep(0.01)
+                twist = Twist()
+                
+                # Execute the next move in input_linear
+                # Twist message is published for the duration of timer_move[self.move_counter]
+                twist.linear.x = input_linear[self.move_counter]
+                self.start_time = rospy.Time.now()
+                while (rospy.Time.now() - self.start_time) < rospy.Duration(timer_move[self.move_counter]):
+                    if minimal_distance is not None and minimal_distance <= self.safety_zone:
+                        twist.linear.x = 0  # Stop the robot
+                        zone = "safety"
 
-        while True:
-            if minimal_distance is not None and minimal_distance <= self.safety_zone:
-                zone = "safety"
+                        # Pause the timer 
+                        timer_move[self.move_counter] = timer_move[self.move_counter] - (rospy.Time.now() - self.start_time).to_sec()  
+                        while minimal_distance is not None and minimal_distance <= self.safety_zone:
+                            # Wait until the robot is outside the safety zone
+                            rospy.sleep(0.01)
+                        self.start_time = rospy.Time.now()  # Update the start time
 
-            # Check if the minimum distance is within the warning zone 1
-            elif minimal_distance is not None and minimal_distance <= self.warning_zone_1:
-                zone = "warning1"
+                    # Check if the minimum distance is within the warning zone 1
+                    elif minimal_distance is not None and minimal_distance <= self.warning_zone_1:
+                        twist.linear.x = input_linear[self.move_counter] * 0.5  # Reduce speed by half
+                        zone = "warning1"
                         
-            # Check if the minimum distance is within the maximum warning zone
-            elif minimal_distance is not None and minimal_distance <= self.warning_zone_2:
-                zone = "warning2"
+                    # Check if the minimum distance is within the maximum warning zone
+                    elif minimal_distance is not None and minimal_distance <= self.warning_zone_2:
+                        twist.linear.x = input_linear[self.move_counter]
+                        zone = "warning2"
                         
-            else:
-                zone = "safe"
+                    else:
+                        zone = "safe"
 
-            # Publish zone if it changed
-            if self.previous_zone != zone:
-                print(f"Zone: {zone}")
-                self.pub_debug.publish(f"Laser | Zone: {zone}")
-                self.previous_zone = zone
+                    # Publish zone if it changed
+                    if self.previous_zone != zone:
+                        print(f"Zone: {zone}")
+                        self.pub_debug.publish(f"Laser | Zone: {zone}")
+                        self.previous_zone = zone
+                    
+                    # Publish velocity message
+                    pub.publish(twist)
+
+                self.move_counter += 1
+
+        rospy.sleep(0.01) # Wait until minimal_distance and linear_speed are available
+        print("Driver Thread stopped.")
+        self.pub_debug.publish("Laser | Driver Thread stopped.")
+        stop_flag = True
+        print("stop_flag is true")                 
+# --------------------------------------------------------------------------
     
 # initalize threads
 tProjector = ProjectorThread(1, "ProjectorTask")
