@@ -34,6 +34,10 @@ A project utilizing RaspberryPi4 that controls lasers to show safety zone and a 
 3. Read the README on the folders "50 Projektion Trajektorie" and "51 Projektion Schutzfeld", make sure the files exist on
 the raspberry Pi
 4. Run projection_management.py on the Luigi PC
+5. After running projection_management.py we need to make sure all python processes are killed. To do this first run    ssh to the Rpi by typing in terminal:
+    - ssh ubuntu@10.21.20.15
+    - password: heros_ubuntu
+6. type "pkill -f python3 -9" and enter
 
 ### Debugging
 
