@@ -13,7 +13,6 @@ A project utilizing RaspberryPi4 that controls lasers to show safety zone and a 
 ### Safety zone projection setup
 
 1. Connect pin 11 (GPIO 17) on RPi to the MOSFET Trigger/PWM
-2. Connect the pin 9 (GND) to the MOSFET GND
 
 ### Trajectory projection setup
 
@@ -46,8 +45,13 @@ To read debug messages from the code running in the raspberry pi, follow the fol
 
 ### Raspberry Pi 4 Model B
 1. Operating system: Ubuntu server 20.04.5 LTS (64-bit) from rpi-imager
-2. ROS distro: ROS noetic (TBD version number?)
+2. ROS distro: ROS noetic
 3. GUI: lubuntu (No Screensaver and disable password login)
-4. Python version: TBD
-5. pip version: TBD
+4. Python version: 3.8.10
+5. pip version: 23.3.1
 6. The Raspberry Pi has to be connected to Innok's WLAN (tumheros) 
+
+### Remote PC (Luigi PC)
+1. Operating system: Ubuntu 20.04.6 LTS 
+2. Python version: 3.8.10
+3. pip version: 23.3.2
