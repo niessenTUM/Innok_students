@@ -1,28 +1,6 @@
 
 import paramiko
 import threading
-import rospy
-from sensor_msgs.msg import Joy
-import paramiko
-
-# class StartSchutzlaserThread(threading.Thread):
-#     def __init__(self, iD, name):           # Initialize the first thread
-#         threading.Thread.__init__(self)
-#         self.iD = iD
-#         self.name = name
-
-#         self.sshSchutzlaser = paramiko.SSHClient()
-#         self.sshSchutzlaser.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-#     def run(self):
-#         self.sshSchutzlaser.connect('10.21.20.10', port=22, username='heros', password='heros')    # Start first SSH connection to innok and enter username and password automatically
-#         stdin, stdout, stderr = self.sshSchutzlaser.exec_command(
-#             # Sending commands through SSH: Navigating through the file system of innok and start acommunication_ros.py
-#             'source /opt/ros/noetic/setup.bash \n cd /home/heros/Dokumente/test_glenn \n python avcommunication_ros.py')  
-        
-#         #  Save the output that is printed to the console by the program send_data_over_ssh to the variable linearspeed
-#         for line in iter(stdout.readline, ""):      
-#             print(stdout.readline())
 
 class StartSchutzlaserThreadPi(threading.Thread):
     def __init__(self, iD, name):           # Initialize the first thread
@@ -37,6 +15,8 @@ class StartSchutzlaserThreadPi(threading.Thread):
         self.sshSchutzlaser.connect('10.21.20.15', port=22, username='ubuntu', password='heros_ubuntu')    # Start first SSH connection to innok and enter username and password automatically
         # allow ssh to use display by running an X Server, access directory, and run file
         stdin, stdout, stderr = self.sshSchutzlaser.exec_command(
+            # # Kill all python processes
+            # 'pkill -f python3 -9\n sleep 0.1\n'
             # Setup X Server to show pygame's output
             'export XAUTHORITY=~/.Xauthority\n sleep 0.1\n export DISPLAY=:0.0\n sleep 0.1\n sudo xhost +\n sleep 0.1\n'
             # Setup ROS environment
