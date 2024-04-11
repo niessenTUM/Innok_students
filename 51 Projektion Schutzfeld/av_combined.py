@@ -51,9 +51,9 @@ class LaserThread(threading.Thread):
         self.name = name
         self.timer = time.time()
         self.blink_interval = 0
-        self.safety_zone = 1
-        self.warning_zone_1 = 1.5
-        self.warning_zone_2 = 2.0   
+        self.safety_zone = 0.9
+        self.warning_zone_1 = 1.25
+        self.warning_zone_2 = 1.25
         self.previous_zone = None
 
         # Create publisher
@@ -83,17 +83,17 @@ class LaserThread(threading.Thread):
                 
                 if minimal_distance is not None and minimal_distance <= self.safety_zone:
                     if self.previous_zone != "safety":
-                        self.blink_interval = 0.5
+                        self.blink_interval = 0.25
                         self.pub_debug.publish("Laser | Safety zone")
                         self.previous_zone = "safety"
                 elif minimal_distance is not None and minimal_distance <= self.warning_zone_1:
                     if self.previous_zone != "warning1":
-                        self.blink_interval = 1
+                        self.blink_interval = 0.5
                         self.pub_debug.publish("Laser | Warning zone 1")
                         self.previous_zone = "warning1"
                 elif minimal_distance is not None and minimal_distance <= self.warning_zone_2:
                     if self.previous_zone != "warning2":
-                        self.blink_interval = 1
+                        self.blink_interval = 0.5
                         self.pub_debug.publish("Laser | Warning zone 2")
                         self.previous_zone = "warning2"
                 else:
