@@ -37,7 +37,7 @@ the raspberry Pi
 5. After running projection_management.py we need to make sure all python processes are killed. To do this first run    ssh to the Rpi by typing in terminal:
     - ssh ubuntu@10.21.20.15
     - password: heros_ubuntu
-6. type "pkill -f python3 -9" and enter
+6. type "sudo pkill -f python3 -9" and enter
 
 ### Debugging
 
