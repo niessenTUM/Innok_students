@@ -2,6 +2,18 @@
 import paramiko
 import threading
 
+# clean all python processes on the Raspberry Pi
+ssh_cleaner = paramiko.SSHClient()
+ssh_cleaner.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh_cleaner.connect('10.21.20.15', port=22, username='ubuntu', password='heros_ubuntu')
+stdin, stdout, stderr = ssh_cleaner.exec_command(
+    # Kill all python processes
+    'sudo pkill -f python3 -9\n sleep 0.1\n'
+    # password for sudo#
+    'heros_ubuntu\n sleep 0.1\n'
+)
+ssh_cleaner.close()
+
 class StartSchutzlaserThreadPi(threading.Thread):
     def __init__(self, iD, name):           # Initialize the first thread
         threading.Thread.__init__(self)
@@ -12,11 +24,9 @@ class StartSchutzlaserThreadPi(threading.Thread):
         self.sshSchutzlaser.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     def run(self):
-        self.sshSchutzlaser.connect('10.21.20.15', port=22, username='ubuntu', password='heros_ubuntu')    # Start first SSH connection to innok and enter username and password automatically
+        self.sshSchutzlaser.connect('10.21.20.15', port=22, username='ubuntu', password='heros_ubuntu') 
         # allow ssh to use display by running an X Server, access directory, and run file
         stdin, stdout, stderr = self.sshSchutzlaser.exec_command(
-            # # Kill all python processes
-            # 'pkill -f python3 -9\n sleep 0.1\n'
             # Setup X Server to show pygame's output
             'export XAUTHORITY=~/.Xauthority\n sleep 0.1\n export DISPLAY=:0.0\n sleep 0.1\n sudo xhost +\n sleep 0.1\n'
             # Setup ROS environment
