@@ -129,6 +129,7 @@ class DisplayThread(threading.Thread):
                 vVelRobot = pygame.math.Vector2(-rotation, linear) # vector of current driving
                 deg_robot = vLine.angle_to(vVelRobot) # calculation of degree between both vectors (=driving degree)
                 deg_robot = int(deg_robot)
+                print("Driving degree: " + str(deg_robot))
 
                 ###No velocity
 
@@ -248,7 +249,8 @@ class SignalThread(threading.Thread):
         self.name = name
 
         # Subscribers
-        self.cmd_vel_rotation_subscriber = rospy.Subscriber('/imu', Imu, self.cmd_vel_rotation_callback) # to get current rotational velocity
+        # self.cmd_vel_rotation_subscriber = rospy.Subscriber('/imu', Imu, self.cmd_vel_rotation_callback) # to get current rotational velocity
+        self.cmd_vel_rotation_subscriber = rospy.Subscriber('/remote_joy', Joy, self.cmd_vel_rotation_callback) # to get current linear velocity
         self.rc_command_subscriber = rospy.Subscriber('/remote_joy', Joy, self.rc_command_callback) # to get current switch position
         self.cmd_vel_linear_subscriber = rospy.Subscriber('/odom', Odometry, self.cmd_vel_linear_callback) # to get current linear velocity
 
@@ -267,10 +269,18 @@ class SignalThread(threading.Thread):
         linear = int(linear)
 
     def cmd_vel_rotation_callback(self, msg):
+        ############## IF IMU TOPIC WORKS ##################
+        # global rotation
+        # rotation = msg.angular_velocity.z
+        # rotation = rotation * 100
+        # rotation = int(rotation)
+
+        ############## IF IMU TOPIC DOES NOT WORK ##################
         global rotation
-        rotation = msg.angular_velocity.z
+        rotation = msg.axes[0]
         rotation = rotation * 100
         rotation = int(rotation)
+        self.debug_publisher.publish("Rotation: " + str(rotation))
 
     def rc_command_callback(self, data):
         global switch
